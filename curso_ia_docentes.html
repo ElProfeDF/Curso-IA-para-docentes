@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IA para Docentes - Plataforma del Curso</title>
+    <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@100..900&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <style>
+        body {
+            font-family: 'Work Sans', sans-serif;
+            background-color: #f7fafc; 
+            color: #1a202c; 
+        }
+        /* Paleta Principal */
+        .text-accent { color: #06b6d4; } /* Teal */
+        .bg-accent { background-color: #06b6d4; }
+        
+        /* Definición de la función box-shadow para el efecto de neón */
+        .neon-shadow-1:hover { box-shadow: 0 0 15px #06b6d4; }
+        .neon-shadow-2:hover { box-shadow: 0 0 15px #ec4899; }
+        .neon-shadow-3:hover { box-shadow: 0 0 15px #fbbf24; }
+        .neon-shadow-4:hover { box-shadow: 0 0 15px #3b82f6; }
+        .neon-shadow-5:hover { box-shadow: 0 0 15px #8b5cf6; }
+        .neon-shadow-6:hover { box-shadow: 0 0 15px #10b981; }
+
+        /* Colores de las Clases y Efectos */
+        .class-color-1 { background-color: #06b6d4; } 
+        .class-color-2 { background-color: #ec4899; } 
+        .class-color-3 { background-color: #fbbf24; } 
+        .class-color-4 { background-color: #3b82f6; } 
+        .class-color-5 { background-color: #8b5cf6; } 
+        .class-color-6 { background-color: #10b981; } 
+        
+        /* Transiciones y animaciones */
+        .class-card-hover {
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        .class-card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px -5px rgba(6, 182, 212, 0.4); 
+        }
+        
+        .block-btn-base {
+            transition: all 0.3s ease;
+            color: white; 
+        }
+        .block-btn-base:hover {
+            transform: scale(1.03);
+        }
+
+        /* Animación de texto para el dashboard */
+        @keyframes typing {
+            from { width: 0 }
+            to { width: 100% }
+        }
+        .typing-animation {
+            overflow: hidden; 
+            border-right: .15em solid #333; /* Color de cursor más oscuro */
+            white-space: nowrap; 
+            animation: 
+                typing 4s steps(40, end),
+                blink-caret .75s step-end infinite;
+        }
+        @keyframes blink-caret {
+            from, to { border-color: transparent }
+            50% { border-color: #333 }
+        }
+        
+        /* Estilo para asegurar que el contenido dentro de <p> se muestre en negrita */
+        .prose strong {
+            font-weight: 700 !important;
+        }
+        
+        /* Estilos para las imágenes de contenido */
+        .content-image {
+            width: 100%;
+            height: auto;
+            border-radius: 0.5rem;
+            object-fit: cover;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="youtube-modal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[200]">
+        <div class="relative w-11/12 max-w-4xl p-4 bg-white rounded-lg shadow-2xl">
+            <button onclick="closeModal('youtube-modal')" class="absolute top-2 right-2 text-gray-800 hover:text-red-600 transition">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+            <div id="youtube-embed-container" class="aspect-video">
+                </div>
+        </div>
+    </div>
+
+    <div id="quiz-modal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[200]">
+        </div>
+    
+    <div id="app" class="min-h-screen flex flex-col">
+        <header class="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+                <div class="flex items-center space-x-4">
+                    <h1 class="text-2xl font-extrabold text-gray-800">
+                        <span class="text-accent">IA</span> para Docentes
+                    </h1>
+                </div>
+                <div id="header-progress" class="flex items-center space-x-4 text-sm font-semibold">
+                    <span id="current-class-display" class="hidden bg-gray-100 px-3 py-1 rounded-full text-gray-700"></span>
+                    <span id="progress-display" class="bg-accent text-white px-3 py-1 rounded-full shadow-md"></span>
+                    <button id="dashboard-btn" class="text-sm font-semibold py-2 px-4 rounded-full bg-gray-100 hover:bg-gray-200 transition duration-150">
+                        Panel Principal
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <main id="content-container" class="flex-grow max-w-7xl mx-auto w-full p-4 sm:p-6 lg:p-8">
+            </main>
+
+        <footer class="bg-gray-800 text-white mt-12 py-6">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-sm">
+                <p>&copy; 2024 Emprendimiento Educativo. Todos los derechos reservados.</p>
+                <div class="mt-2 h-10 flex items-center justify-center space-x-2">
+                    <span class="text-gray-400">Diseño Tecnológico y Moderno</span>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // --- 1. DATOS Y RECURSOS DEL CURSO ---
+
+        // Colores de las clases para botones (también usados para bloques internos)
+        const CLASS_COLORS = [
+            { id: 1, name: 'class-color-1', shadow: 'neon-shadow-1' }, // Teal
+            { id: 2, name: 'class-color-2', shadow: 'neon-shadow-2' }, // Fuchsia
+            { id: 3, name: 'class-color-3', shadow: 'neon-shadow-3' }, // Amber
+            { id: 4, name: 'class-color-4', shadow: 'neon-shadow-4' }, // Blue
+            { id: 5, name: 'class-color-5', shadow: 'neon-shadow-5' }, // Purple
+            { id: 6, name: 'class-color-6', shadow: 'neon-shadow-6' }  // Emerald Green
+        ];
+        
+        // El progreso se simulará en la memoria de la sesión (sin persistencia local)
+        let courseProgress = { 1: false, 2: false, 3: false, 4: false, 5: false, 6: false };
+
+        // Función para obtener URL de imagen placeholder (Unsplash)
+        function getPlaceholderImageURL(keywords, seed) {
+            // Usando Unsplash Source para imágenes temáticas aleatorias con seed para consistencia.
+            const query = encodeURIComponent(keywords.replace(/,\s/g, ' '));
+            return `https://source.unsplash.com/400x300/?${query}&sig=${seed}`;
+        }
+
+        // Definición de las clases
+        const CLASS_CONTENT = [
+            // Clase 1: Bases (6 Bloques)
+            {
+                id: 1,
+                title: "Clase 1: Bases de la IA, tipos y evolución",
+                subtitle: "Comprendiendo la Inteligencia Artificial desde sus cimientos y su historia.",
+                teaser: "Comprende los conceptos fundamentales (Algoritmo, IA Generativa) y los tres tipos de IA (Estrecha, General y Superinteligencia) que marcan el panorama tecnológico actual.",
+                blocks: [
+                    { 
+                        title: "Conceptos clave de la IA", 
+                        icon: "brain-circuit",
+                        content: `<p class="mb-4">Escuchamos sobre inteligencia artificial (IA) constantemente, pero ¿de qué se trata? La IA es una tecnología que le permite a las máquinas y computadoras imitar algunas capacidades humanas, como <strong>aprender, resolver problemas y tomar decisiones</strong>. Piensa en los asistentes virtuales, los autos que se manejan solos o las recomendaciones que te aparecen cuando ves videos: todas esas son aplicaciones de la IA.</p><p class="mb-4"><strong>Potencia Pedagógica:</strong> La IA se basa en la capacidad de las máquinas para procesar vastas cantidades de datos e identificar patrones a un ritmo que supera la capacidad humana. Esto no solo facilita tareas, sino que redefine cómo la información es gestionada en el ecosistema educativo, transformando al docente en un **curador de información**.</p><p class="mb-4">Para el docente, la IA es una herramienta que puede automatizar tareas y <strong>personalizar la experiencia de aprendizaje</strong> de cada estudiante, liberando tiempo para enfocarse en la pedagogía.</p>`,
+                        keywords: "neural network, brain, circuits"
+                    },
+                    { 
+                        title: "Raíces históricas y evolución de la IA", 
+                        icon: "clock-3",
+                        content: `<p class="mb-4">La idea de la inteligencia artificial no es tan nueva como parece, gestada en los años 50 con científicos como Alan Turing y su famoso 'Test'. Este período se conoce como la **Etapa Fundacional**. A partir de los años 90, con el aumento del poder de procesamiento y la disponibilidad de datos (Big Data), el <strong>Machine Learning</strong> despegó.</p><p class="mb-4">Hoy, la IA puede realizar tareas que antes parecían imposibles, como traducir idiomas automáticamente o diagnosticar enfermedades. Este avance continuo, marcado por 'inviernos' y 'primaveras' tecnológicas, nos lleva a una constante redefinición del papel de la tecnología en la sociedad.</p><p class="mt-4 font-semibold italic">Recurso relacionado: Los Límites de la Imaginación Humana. <a href="#" onclick="openYouTubeModal('kwjiqBvXVEA'); return false;" class="text-accent underline hover:text-blue-700">Ver video</a></p>`,
+                        keywords: "vintage computer, evolution, data growth"
+                    },
+                    { 
+                        title: "El algoritmo: el motor de la IA", 
+                        icon: "settings-2",
+                        content: `<p class="mb-4">El concepto central es el <strong>algoritmo</strong>. Es la "receta" o el conjunto metódico de instrucciones lógicas que la máquina sigue para hacer cálculos, resolver problemas y tomar decisiones. Si la receta es clara y los ingredientes (datos) son buenos, el resultado será eficaz.</p><p class="mb-4"><strong>Potencia Pedagógica:</strong> Los algoritmos modernos utilizan **redes neuronales** que les permiten aprender y auto-ajustarse. Es esencial que los estudiantes comprendan que el algoritmo no es magia, sino un proceso lógico que podemos analizar y auditar.</p><p class="mb-4"><strong>Ejemplo:</strong> YouTube te sugiere videos basándose en tu historial. Este algoritmo ajusta continuamente las sugerencias, <strong>aprendiendo de cada interacción</strong> para refinar la experiencia del usuario.</p>`,
+                        keywords: "code, flowchart, algorithm, logic"
+                    },
+                    { 
+                        title: "Tipos de IA y la IA generativa", 
+                        icon: "sparkles",
+                        content: `<h4 class="text-xl font-bold mt-4 mb-2">Los 3 tipos de Inteligencia Artificial:</h4><ul class="list-disc pl-5 space-y-2"><li><strong>IA Estrecha (ANI):</strong> Es la IA que existe hoy. Se especializa en tareas concretas (Ej. Siri, sistemas de recomendación).</li><li><strong>IA General (AGI):</strong> Hipotética; tan inteligente como un humano en todos los ámbitos.</li><li><strong>Superinteligencia Artificial (ASI):</strong> Hipotética; supera el intelecto humano en casi cualquier campo.</li></ul><h4 class="text-xl font-bold mt-6 mb-2">Inteligencia Artificial Generativa (IAGen):</h4><p class="mb-4">La IAGen es la más relevante para nosotros, pues se enfoca en crear <strong>contenido nuevo y original</strong> (texto, código, imágenes) a partir de los datos que aprendió. Es la tecnología detrás de ChatGPT y Midjourney, y su impacto en la creación de materiales es directo e inmediato.</p>`,
+                        keywords: "digital, generation, creativity, ai art"
+                    },
+                    { 
+                        title: "El rol estratégico de la IA en la educación", 
+                        icon: "graduation-cap",
+                        content: `<p class="mb-4">La IA es una herramienta poderosa que promueve la **diferenciación curricular masiva** al analizar el rendimiento y ajustar dinámicamente las rutas de aprendizaje, asegurando que el contenido sea el adecuado para cada ritmo individual.</p><p class="mb-4"><strong>Potencia Pedagógica:</strong> Al automatizar la corrección y la planificación, la IA libera al docente de la carga administrativa. Esto permite que el tiempo ahorrado se invierta en la **interacción significativa**, la mentoría y el fomento del pensamiento crítico en el aula. La IA optimiza la logística para que el docente maximice el impacto humano.</p>`,
+                        keywords: "personalization, education, student, teacher"
+                    },
+                    {
+                        title: "Recursos y Data Extra",
+                        icon: "bookmark",
+                        content: `<h4 class="text-xl font-bold mt-4 mb-2">Te recomendamos:</h4><ul class="list-disc pl-5 space-y-2 mb-4"><li>Película: <strong>"Ex Machina"</strong> - Un thriller que explora los límites de la conciencia y la ética de la IA, ideal para debatir con estudiantes avanzados.</li></ul><h4 class="text-xl font-bold mt-4 mb-2">Data Extra:</h4><p>El **Test de Turing** es la prueba conceptual clave para medir si una máquina puede exhibir un comportamiento inteligente indistinguible de un humano. Aunque superado por modelos de lenguaje en ciertos contextos, sigue siendo el hito definitorio de la inteligencia artificial.</p><ul class="list-disc pl-5 space-y-2"><li>Breve historia visual de la Inteligencia Artificial: <a href="https://www.nationalgeographic.com.es/ciencia/breve-historia-visual-inteligencia-artificial14419" target="_blank" class="text-accent underline hover:text-blue-700">Ver artículo</a></li><li>El test de Turing: ¿Puede una computadora pasar por un humano?: <a href="#" onclick="openYouTubeModal('3wLqsRLVV-c'); return false;" class="text-accent underline hover:text-blue-700">Ver video</a></li></ul>`,
+                        keywords: "Examen,Test,Turing,Question"
+                    }
+                ]
+            },
+            // Clase 2: Riesgos (6 Bloques)
+            {
+                id: 2,
+                title: "Clase 2: Riesgos, sesgos y desafíos éticos",
+                subtitle: "La IA no es neutra. Aprende a identificar sus fallas y sus sesgos para proteger la ciudadanía digital.",
+                teaser: "Desnaturaliza la IA. Analiza las <strong>'alucinaciones'</strong> (errores) del sistema, los diferentes tipos de sesgos y los riesgos de privacidad en plataformas cotidianas.",
+                blocks: [
+                    { 
+                        title: "Desnaturalizando la IA y el rol ciudadano", 
+                        icon: "shield-alert",
+                        content: `<blockquote class="border-l-4 border-accent pl-4 italic text-gray-600 mb-4">"Dos peces jóvenes nadaban juntos cuando de repente se encontraron con un pez viejo, que los saludó y les dijo, 'Buenos días, muchachos ¿Cómo está el agua?' [...] El ejercicio es <strong>desnaturalizar</strong> y cuestionar esta 'agua' tecnológica. La educación tiene la responsabilidad de formar una **ciudadanía digital crítica**."</blockquote><p class="mb-4">La IA atraviesa nuestra vida cotidiana, mediando desde la búsqueda de una dirección hasta las recomendaciones de consumo. Ignorar la IA como un "agua" invisible es un riesgo.</p><p class="mb-4"><strong>Potencia Pedagógica:</strong> Nuestro papel es la **alfabetización mediática** y la formación de estudiantes capaces de comprender y analizar el impacto social, político y cultural de las tecnologías.</p>`,
+                        keywords: "critical thinking, shield, digital citizenship"
+                    },
+                    { 
+                        title: "Alucinaciones: los riesgos y fallas de la IA", 
+                        icon: "zap-off",
+                        content: `<p class="mb-4">Las mal llamadas <strong>alucinaciones</strong> son fallas donde el sistema de IA produce resultados inesperados, sin sentido o **datos completamente inventados**. Esto ocurre por problemas en su entrenamiento o en la comprensión del contexto.</p><p class="mb-4"><strong>Potencia Pedagógica:</strong> La existencia de alucinaciones convierte a la IA en una herramienta imperfecta, lo que nos da la oportunidad de enseñar la **verificación de fuentes**, el **escepticismo digital** y la **validación de información** como habilidades académicas esenciales.</p><p class="mt-4 font-semibold italic">Profundiza sobre estos temas: <a href="https://www.educ.ar/recursos/159082/sesgos-citas-falsas-y-alucinaciones-fallas-en-la-ia" target="_blank" class="text-accent underline hover:text-blue-700">Sesgos, citas falsas y alucinaciones</a></p>`,
+                        keywords: "error, warning, fake news"
+                    },
+                    { 
+                        title: "Sesgos: el reflejo de los prejuicios", 
+                        icon: "balance-horizontal",
+                        content: `<h4 class="text-xl font-bold mt-4 mb-2">¿Qué es un sesgo?</h4><p class="mb-4">Es una inclinación que hace que el sistema trate de manera desigual a ciertos grupos (género, raza, cultura), replicando los prejuicios humanos presentes en los datos. <strong>La calidad del resultado es directamente proporcional a la calidad de sus datos.</strong></p><p class="mb-4"><strong>Ampliación:</strong> Los sesgos son un problema de equidad que impacta en la sociedad. Combatirlos requiere **diversidad** en los equipos de desarrollo y la **auditoría constante** de los modelos para evitar el **Sesgo Estereotipador**.</p><h4 class="text-xl font-bold mt-6 mb-2">Tipos de sesgos (ampliación):</h4><ul class="list-disc pl-5 space-y-2"><li><strong>Sesgo de Muestra:</strong> Datos que no representan a toda la población.</li><li><strong>Sesgo Estereotipador:</strong> Refuerza estereotipos nocivos.</li><li><strong>Sesgo del Algoritmo:</strong> Errores si el problema no es correcto o específico.</li></ul>`,
+                        keywords: "unbalanced, scale, equity, bias"
+                    },
+                    { 
+                        title: "Riesgos de privacidad y política institucional", 
+                        icon: "lock",
+                        content: `<p class="mb-4">Las plataformas como Meta pueden acceder a conversaciones no encriptadas para fines de moderación, publicidad y mejora de servicios. Es fundamental **revisar y asegurarse de que la recopilación de los datos se ajuste a expectativas razonables.**</p><p class="mb-4"><strong>Ampliación:</strong> Para los directivos, es esencial establecer **Políticas de Uso Aceptable (PUA)** claras para la IA, protegiendo los datos sensibles de estudiantes y la institución. Esto incluye definir qué herramientas están permitidas y bajo qué condiciones de privacidad.</p><p class="font-semibold">Como docentes, debemos profundizar en los avisos de privacidad y promover una <strong>ciudadanía digital</strong> responsable.</p>`,
+                        keywords: "digital, policy, privacy, locked data"
+                    },
+                    { 
+                        title: "La huella digital y el uso de datos", 
+                        icon: "footprints",
+                        content: `<p class="mb-4">Los datos personales (likes, búsquedas, comentarios) conforman nuestra **huella digital**. Cuanto más interactuamos en línea, más grande es esta huella, utilizada para generar anuncios personalizados.</p><p class="mb-4"><strong>Potencia Pedagógica:</strong> Enseñar a gestionar esta huella y a ser críticos con la **micro-segmentación** que define lo que ven es una habilidad clave. Debemos enseñarles a cuestionar los términos y condiciones que aceptan al instalar una aplicación.</p><p class="mt-4 italic">Conoce más sobre las cookies en este artículo: ¿Tengo que aceptar las cookies cuando navego en internet? | Argentina.gob.ar (Recurso externo).</p>`,
+                        keywords: "footprint, data trail, digital tracking"
+                    },
+                    {
+                        title: "Recursos y Actividad de Debate",
+                        icon: "book-open-check",
+                        content: `<p class="mb-4">Te recomendamos: **Inteligencia Artificial: ¿Amiga o Enemiga? | Diego Fernández Slezak | TEDxRiodelaPlata**</p><p class="mt-4 font-bold text-lg text-class-color-2">Actividad de Debate:</p><p>Te invitamos a reflexionar en el foro sobre los riesgos y oportunidades. ¿Cuáles son las mayores complejidades en el ámbito de la educación? Video a debatir: <a href="#" onclick="openYouTubeModal('znq3ql6wqnE'); return false;" class="text-accent underline hover:text-blue-700">Ver video</a>.</p>`,
+                        keywords: "group debate, forum, conversation"
+                    }
+                ]
+            },
+            // Clase 3: Consignas (6 Bloques)
+            {
+                id: 3,
+                title: "Clase 3: El poder del Prompt: consignas y evaluación con IA",
+                subtitle: "Aprende el arte de la comunicación con la IA para obtener resultados precisos y útiles en tu planificación.",
+                teaser: "Supera los prejuicios y aprende a usar los Modelos de Lenguaje (LLMs) como ChatGPT. Dominarás las 5 claves para crear prompts efectivos y generar consignas de aprendizaje.",
+                blocks: [
+                    { 
+                        title: "Supera los mitos: desarmando prejuicios", 
+                        icon: "mind-map",
+                        content: `<p class="mb-4">La IA no es una amenaza, sino un amplificador de tu rol. Es fundamental desarmar los prejuicios como "La IA nos va a quitar el trabajo" o "Con la IA los y las estudiantes no van aprender" para adoptar una postura de crecimiento.</p><h4 class="text-xl font-bold mt-6 mb-2">Potencia Pedagógica:</h4><p>La clave es la <strong>experimentación</strong> y la <strong>capacitación continua</strong>. La IA potencia tu rol como guía pedagógico, permitiéndote dedicar más tiempo a la interacción humana, a la mentoría y a la diferenciación curricular, en lugar de tareas rutinarias. <strong>La IA no sustituye la empatía ni la experiencia docente.</strong></p>`,
+                        keywords: "prejudice, solution, thinking, growth"
+                    },
+                    { 
+                        title: "El prompt: la nueva alfabetización", 
+                        icon: "message-square-text",
+                        content: `<h4 class="text-xl font-bold mt-4 mb-2">¿Qué es un Prompt?</h4><p class="mb-4">Un prompt es la <strong>instrucción, pregunta o texto</strong> que utilizas para interactuar con sistemas de inteligencia artificial. Es como un comando, que dicta la tarea concreta que la máquina debe realizar.</p><p class="font-semibold italic">Dominar el <strong>Prompt Engineering</strong> es la nueva alfabetización digital, ya que convierte al docente en un arquitecto de la información generada por la máquina. **La calidad de tu pregunta determina la calidad de la respuesta.**</p>`,
+                        keywords: "Prompt,Comando,Interacción"
+                    },
+                    { 
+                        title: "Técnicas de prompt engineering", 
+                        icon: "key",
+                        content: `<h4 class="text-xl font-bold mt-4 mb-2">5 Claves para tus Prompts Efectivos:</h4><ol class="list-decimal pl-5 space-y-3"><li><strong>Define el contexto y el objetivo:</strong> Describe el tema y el propósito claramente (Ej: "Actúa como profesor de historia y crea una actividad...").</li><li><strong>Especifica el tipo de respuesta:</strong> Pide un formato específico ("una lista", "preguntas para debate", "un cronograma").</li><li><strong>Incorpora el nivel de dificultad:</strong> Indica el nivel educativo (Ej: "lenguaje accesible para estudiantes de 14 a 16 años").</li><li><strong>Limita la extensión:</strong> Sé conciso en lo que pides (Ej: "proporciona cinco conceptos clave").</li><li><strong>Usa ejemplos o referencias:</strong> Guía el estilo que buscas (Ej: "enfoque reflexivo como en el método Montessori").</li></ol><p class="mt-4 font-semibold">Al aplicar estas técnicas, dejas de recibir respuestas genéricas y obtienes un asistente pedagógico de alta precisión y usabilidad.</p>`,
+                        keywords: "prompt, keys, coding, structure"
+                    },
+                    { 
+                        title: "LLMs: asistentes de texto avanzados", 
+                        icon: "cloud",
+                        content: `<h4 class="text-xl font-bold mt-4 mb-2">¿Qué son los LLMs?</h4><p class="mb-4">Los <strong>LLMs</strong> (Modelos de Lenguaje de Gran Escala) son programas de IA diseñados para entender y generar texto en lenguaje humano, entrenados con millones de textos. Actúan como asistentes capaces de leer, escribir y responder preguntas coherentes.</p><p class="mb-4"><strong>Ampliación:</strong> Los LLMs son herramientas de **predicción estadística**; no 'piensan' ni 'sienten', solo predicen la secuencia de palabras más probable. Por ello es crucial la verificación. Su valor radica en la capacidad de resumir, parafrasear y generar borradores de textos complejos a una velocidad increíble.</p><p class="font-semibold italic">Siempre se debe hacer un proceso de <strong>verificación cruzada</strong> de la información generada.</p>`,
+                        keywords: "LLMs, Modelo, Lenguaje, Estadística"
+                    },
+                    { 
+                        title: "ChatGPT en la planificación docente", 
+                        icon: "edit-3",
+                        content: `<p class="mb-4">ChatGPT es un ejemplo de IA Generativa que facilita tu rol de planificador en 5 pasos clave:</p><ol class="list-decimal pl-5 space-y-2"><li>Define el objetivo de la clase.</li><li>Solicita un esquema de la clase (estructura inicial).</li><li>Revisa y ajusta el contenido (personalización docente).</li><li>Diseña actividades interactivas (juegos de roles, simulaciones).</li><li>Prepara preguntas y evaluación (borradores de rúbricas o quizzes).</li></ol><p class="mt-4 italic">Al delegar la creación de borradores de estructura a la IA, optimizas el tiempo dedicado a la **logística** y te enfocas en la **interacción** y la creatividad de la experiencia de aprendizaje.</p>`,
+                        keywords: "planning, checklist, education, writing"
+                    },
+                    { 
+                        title: "Generación creativa: imágenes y audios", 
+                        icon: "image",
+                        content: `<h4 class="text-xl font-bold mt-4 mb-2">Claves para usar IA para Imágenes:</h4><p class="mb-4">Herramientas como DALL-E y Midjourney te permiten crear contenido visual pertinente sin derechos de autor. Las claves son la **descripción detallada** (entorno, estilo, colores) y la **iteración** (probar y ajustar el prompt varias veces).</p><p class="font-semibold"><strong>Potencia Pedagógica:</strong> Crear imágenes a la medida (Ej. una metáfora visual para un concepto abstracto de biología) mejora la retención del estudiante y asegura que el material sea 100% contextualizado y libre de derechos de autor.</p>`,
+                        keywords: "creative, digital art, prompt to image"
+                    }
+                ]
+            },
+            // Clase 4: Gestión Docente (5 Bloques)
+            {
+                id: 4,
+                title: "Clase 4: Herramientas para la gestión docente y administrativa",
+                subtitle: "Automatiza lo repetitivo y enfócate en lo pedagógico. La IA al servicio de tu organización.",
+                teaser: "Explora los tipos de sistemas de IA para la educación (tutoría inteligente, analítica de aprendizaje). Aprende a usar ChatGPT para planificar reuniones, generar informes de desempeño y mejorar la comunicación con las familias.",
+                blocks: [
+                    { 
+                        title: "Un mundo de posibilidades en la gestión", 
+                        icon: "layout-dashboard",
+                        content: `<p class="mb-4">La IA ofrece herramientas valiosas para la gestión docente porque permite <strong>automatizar tareas repetitivas</strong>, analizar datos y personalizar el aprendizaje, lo que **libera tiempo y recursos** para que los docentes se centren en tareas pedagógicas.</p><p class="mb-4"><strong>Ampliación:</strong> La gestión de datos de asistencia, la creación de rúbricas o el resumen de documentos institucionales son tareas que pueden ser delegadas a la IA. Esto transforma el rol del docente de administrador a diseñador curricular y mentor.</p><p class="font-semibold italic">Recordá que es importante ejercitar con las diferentes herramientas, para asimilar su uso e incorporar a la IA como aliada en tu profesión.</p>`,
+                        keywords: "management, efficiency, automation, dashboard"
+                    },
+                    { 
+                        title: "Tipos de herramientas de IA en educación", 
+                        icon: "tool",
+                        content: `<p class="mb-4">Los modelos de aprendizaje se relacionan con cuatro componentes: contenido, métodos de enseñanza, evaluación y comunicación. Ejemplos de sistemas de IA:</p><ul class="list-disc pl-5 space-y-2"><li><strong>Sistemas de tutoría inteligente:</strong> Proporcionan experiencia de aprendizaje personalizada (simulando un tutor humano).</li><li><strong>Plataformas de aprendizaje adaptativo:</strong> Adaptan el contenido y la dificultad según el progreso individual, asegurando que nadie se quede atrás.</li><li><strong>Analítica de aprendizaje:</strong> Utiliza grandes volúmenes de datos para predecir el rendimiento y detectar estudiantes en riesgo.</li><li><strong>Chatbots educativos:</strong> Interacción para respuestas a preguntas frecuentes, liberando al docente de consultas rutinarias.</li></ul><p class="mt-4 font-semibold">El objetivo es maximizar la eficiencia y la personalización.</p>`,
+                        keywords: "tools, AI, adaptive learning, data analysis"
+                    },
+                    { 
+                        title: "Planificación de reuniones asistida por IA", 
+                        icon: "calendar-check",
+                        content: `<p class="mb-4">ChatGPT es excelente para <strong>planificar reuniones</strong> (con docentes, directivos, familias), ayudando a definir propósito, objetivos, resultados esperados y una agenda personalizada, lo que optimiza el tiempo de organización.</p><p class="mb-4"><strong>Ampliación:</strong> Un prompt bien formulado puede generar una estructura de reunión en segundos, permitiéndote enfocarte en la **estrategia de comunicación** y en la moderación efectiva del encuentro. Es fundamental para la gestión institucional eficaz.</p><p class="font-semibold italic mt-4">Al usar ChatGPT, define: <strong>1. Propósito y objetivos.</strong> 2. Recopila información relevante. 3. Utiliza ChatGPT para generar una agenda personalizada.</p>`,
+                        keywords: "meeting, agenda, calendar, optimization"
+                    },
+                    { 
+                        title: "Redacción de informes eficaces con IA", 
+                        icon: "file-text",
+                        content: `<p class="mb-4">Redactar informes consume mucho tiempo. ChatGPT permite a los docentes generar borradores de informes de manera rápida, precisa y eficiente.</p><p class="mb-4"><strong>Ampliación:</strong> La IA puede transformar datos cuantitativos (calificaciones) en narrativas cualitativas y constructivas, destacando fortalezas y sugiriendo planes de acción específicos. Esto mejora la comunicación con las familias y facilita la toma de decisiones directivas.</p><p class="font-semibold italic">Recomendaciones: <strong>Anonimizar los datos</strong> (nunca ingreses datos personales sensibles). Redactar el prompt destacando fortalezas y sugiriendo áreas de mejora. Utilizá un lenguaje positivo y alentador.</p>`,
+                        keywords: "report, analytics, data, positive feedback"
+                    },
+                    { 
+                        title: "Comunicación personalizada con IA", 
+                        icon: "messages-square",
+                        content: `<p class="mb-4">La IA automatiza y simplifica tareas de comunicación (ej. respuestas a FAQs, recordatorios). La integración de la IA no solo optimiza la forma en que compartimos información, sino que también fortalece la conexión entre educadores, estudiantes y familias.</p><p class="mb-4"><strong>Ampliación:</strong> Puedes usar IA para ajustar el **tono de voz** de un correo (de formal a motivacional) o para traducir mensajes instantáneamente, mejorando la **accesibilidad** con familias que hablan otros idiomas, fomentando la inclusión.</p><p class="font-semibold italic mt-4"><strong>¡Ojo!</strong> Siempre es importante darle más detalles de lo que queremos lograr y CÓMO lo queremos lograr en el prompt, y siempre <strong>revisar y humanizar</strong> la respuesta final.</p>`,
+                        keywords: "communication, language, inclusivity, chatbot"
+                    }
+                ]
+            },
+            // Clase 5: Materiales Educativos (6 Bloques)
+            {
+                id: 5,
+                title: "Clase 5: Materiales educativos dinámicos con IA",
+                subtitle: "Diseña infografías, presentaciones y recursos visuales en minutos usando herramientas generativas.",
+                teaser: "Conoce herramientas específicas como <strong>Diffit</strong> y <strong>Cuenti.to</strong>. Domina el uso de <strong>Canva con IA</strong> para generar cuestionarios, guías visuales y presentaciones en una fracción del tiempo.",
+                blocks: [
+                    { 
+                        title: "Optimización del tiempo docente", 
+                        icon: "rocket",
+                        content: `<p class="mb-4">La IA es una aliada clave que permite al docente centrarse en la calidad pedagógica, no en la logística. Te permite:</p><ul class="list-disc pl-5 space-y-2 font-semibold"><li><strong>Diseñar materiales en menos tiempo:</strong> Generar cuestionarios, guías visuales y presentaciones en una fracción del tiempo.</li><li><strong>Conectar con sus intereses:</strong> Usar la IA para adaptar tus materiales para un mayor atractivo visual.</li><li><strong>Fomentar la participación:</strong> Crear recursos que inviten a la interacción activa.</li></ul><p class="mt-4"><strong>Ampliación:</strong> Esta optimización te permite pasar más tiempo en la **interacción directa** con el estudiante y la mentoría individualizada, elevando la calidad de la enseñanza.</p>`,
+                        keywords: "efficiency, rocket, material, design"
+                    },
+                    { 
+                        title: "Herramientas de diferenciación y adaptación", 
+                        icon: "rotate-3d",
+                        content: `<p class="mb-4">Herramientas como <strong>Diffit</strong> permiten adaptar textos educativos al nivel de comprensión de tus estudiantes, generando resúmenes, vocabulario y preguntas. Esto es clave para la **inclusión y la diferenciación** en el aula.</p><p class="mb-4"><strong>Ampliación:</strong> La adaptación automática asegura que el contenido sea accesible para estudiantes con diferentes ritmos y estilos de aprendizaje. También facilita la creación de materiales **multilingües** al instante.</p><p class="font-semibold italic">Otras herramientas como <strong>Cuenti.to</strong> permiten generar cuentos infantiles ilustrados basados en una idea inicial.</p>`,
+                        keywords: "diferenciación, adaptación, textos"
+                    },
+                    { 
+                        title: "Canva y la generación de contenido visual", 
+                        icon: "palette",
+                        content: `<p class="mb-4">Canva ha integrado poderosas herramientas de IA que permiten a los docentes generar diseños complejos en minutos:</p><ul class="list-disc pl-5 space-y-2"><li><strong>Magic Write (Redacción Asistida):</strong> Genera textos o resúmenes rápidos para diapositivas.</li><li><strong>Texto a Imagen:</strong> Convierte descripciones textuales en imágenes únicas, ideal para ilustrar conceptos abstractos.</li><li><strong>Magic Design (Asistente de Diseño):</strong> Genera propuestas de diseño automáticamente.</li></ul><p class="mt-4 font-semibold"><strong>Potencia Pedagógica:</strong> Usar la IA para crear imágenes contextualizadas te permite tener **control total sobre la estética y el mensaje**, sin sacrificar horas en el diseño.</p>`,
+                        keywords: "Canva, design, AI tool"
+                    },
+                    { 
+                        title: "Creación de videos cortos y dinámicos", 
+                        icon: "clapperboard",
+                        content: `<p class="mb-4">Las herramientas de IA facilitan la creación de videos educativos cortos y dinámicos. Plataformas como **RunwayML** permiten la edición de videos avanzado para proyectos audiovisuales.</p><p class="mb-4"><strong>Ampliación:</strong> El formato de video corto (tipo TikTok o Reel) es el lenguaje nativo de los estudiantes actuales. La IA permite al docente generar este contenido sin equipos de producción complejos.</p><p class="font-semibold italic">**Recomendación profesional:** Utiliza guiones generados por ChatGPT para estructurar el contenido, y mantén la duración por debajo de 3 minutos para asegurar la atención del estudiante.</p>`,
+                        keywords: "video, editing, media, clapperboard"
+                    },
+                    { 
+                        title: "Generación de cuestionarios y guías", 
+                        icon: "clipboard-check",
+                        content: `<p class="mb-4">La IA, cuando se le proporciona el texto fuente, puede generar automáticamente preguntas de opción múltiple o respuesta corta.</p><h4 class="text-xl font-bold mt-4 mb-2">Proceso efectivo:</h4><ol class="list-decimal pl-5 space-y-2"><li>Define el objetivo de aprendizaje.</li><li>Proporciona contexto y palabras clave a la IA.</li><li><strong>Ajusta y valida:</strong> Revisa que las preguntas no tengan ambigüedades y que midan el objetivo de aprendizaje real.</li></ol><p class="mt-4 font-semibold">El valor de la IA aquí es la **velocidad**; el valor del docente es la **calidad pedagógica** al revisar y ajustar las preguntas generadas.</p>`,
+                        keywords: "quiz, exam, multiple choice, assessment"
+                    },
+                    { 
+                        title: "Recursos visuales y ejemplos prácticos", 
+                        icon: "image-up",
+                        content: `<p class="mb-4">El uso de imágenes sin derechos de autor, creadas a la medida con IA, es un paso gigante para el profesionalismo de tus materiales. Esto facilita la **comprensión de conceptos complejos** y motiva al alumnado.</p><p class="font-semibold"><strong>Ampliación:</strong> En lugar de una foto de stock genérica, puedes generar ilustraciones de conceptos abstractos (ej. una metáfora visual para la gravedad) o imágenes contextualizadas culturalmente.</p><p class="font-semibold">Recuerda: la IA está para aliviar tu carga, permitiéndote dedicar ese tiempo a pensar en cómo motivar a tu grupo a debatir sobre el tema en clase.</p>`,
+                        keywords: "visual, illustration, abstract, creativity"
+                    }
+                ]
+            },
+            // Clase 6: Reflexiones Finales (6 Bloques)
+            {
+                id: 6,
+                title: "Clase 6: Reflexiones y nuevos horizontes",
+                subtitle: "Cerramos el curso analizando la IA como motor de la creatividad, la investigación y la equidad educativa.",
+                teaser: "Analiza la IA y la <strong>creatividad en el aula</strong>, aborda el dilema del <strong>plagio</strong> y el uso indebido, y reflexiona sobre el futuro de la educación, incluyendo los <strong>desafíos de acceso desigual</strong>.",
+                blocks: [
+                    { 
+                        title: "IA y creatividad en la enseñanza", 
+                        icon: "lightbulb",
+                        content: `<p class="mb-4">La creatividad no es solo arte, es la capacidad de generar **ideas originales y útiles** para resolver problemas. La IA, lejos de limitarla, la potencia:</p><ul class="list-disc pl-5 space-y-2 font-semibold"><li><strong>Genera ideas iniciales:</strong> Supera el bloqueo creativo con borradores de la IA.</li><li><strong>Experimentación:</strong> Prueba estilos de enseñanza o formatos de evaluación nuevos (ej. simulaciones complejas).</li><li><strong>Liberación de tiempo:</strong> El tiempo ahorrado en tareas administrativas se invierte en el diseño pedagógico profundo.</li></ul><p class="mt-4"><strong>Ampliación:</strong> La IA se convierte en un **socio de *brainstorming***, impulsando al docente a crear proyectos multidisciplinares y temáticos más allá de sus métodos tradicionales.</p>`,
+                        keywords: "creativity, idea, innovation, lightbulb"
+                    },
+                    { 
+                        title: "El desafío del plagio y el uso indebido", 
+                        icon: "gavel",
+                        content: `<p class="mb-4">El plagio asistido por IA es un problema ético que requiere una respuesta pedagógica, no solo punitiva. Nuestro rol es **transformar** la evaluación.</p><h4 class="text-xl font-bold mt-4 mb-2">Soluciones pedagógicas:</h4><ul class="list-disc pl-5 space-y-2"><li><strong>Evaluaciones auténticas:</strong> Pedir productos contextualizados, personales y creativos (Ej: un análisis crítico de un evento local).</li><li><strong>Proceso, no solo producto:</strong> Evaluar los borradores, el razonamiento y las fuentes utilizadas, exigiendo al estudiante que use y cite la IA como una herramienta.</li></ul><p class="mt-4"><strong>Ampliación:</strong> Enseñar a citar correctamente el uso de la IA promueve la **integridad académica** y convierte la herramienta en un asistente legítimo, en lugar de un sustituto de la autoría.</p>`,
+                        keywords: "plagiarism, ethics, rule of law, honesty"
+                    },
+                    { 
+                        title: "Formación docente e investigación educativa", 
+                        icon: "school",
+                        content: `<p class="mb-4">La IA impulsa la **investigación educativa**, analizando grandes conjuntos de datos sobre el rendimiento estudiantil para identificar patrones y mejorar las metodologías. La **formación continua** en IA es crucial.</p><p class="font-semibold italic">**El rol docente evoluciona:** Debemos ser aprendices constantes, explorando cómo la IA puede mejorar nuestra práctica y compartiendo esas innovaciones con la comunidad educativa. La analítica de aprendizaje asistida por IA permite a los directivos tomar decisiones estratégicas basadas en datos en tiempo real.</p>`,
+                        keywords: "teacher training, school, data analysis"
+                    },
+                    { 
+                        title: "La brecha digital y la equidad", 
+                        icon: "globe-lock",
+                        content: `<p class="mb-4">La IA amenaza con ampliar la **brecha digital** entre quienes tienen acceso a tecnologías y quienes no. Si no se aborda con una visión de equidad, la IA puede generar aún más desigualdad.</p><p class="font-semibold italic">**Nuestro compromiso:** Buscar soluciones tecnológicas que funcionen con **recursos limitados** y abogar por políticas públicas que garanticen el acceso a dispositivos e internet en comunidades vulnerables. El foco debe estar en la **accesibilidad universal**.</p><p class="mt-4"><strong>Ampliación:</strong> Es necesario buscar modelos de IA que funcionen *offline* o con baja conectividad, para asegurar que la innovación llegue a todos los contextos educativos, especialmente en zonas rurales o de bajos recursos.</p>`,
+                        keywords: "equity, digital divide, access, locked world"
+                    },
+                    { 
+                        title: "El futuro de la educación con IA", 
+                        icon: "forward",
+                        content: `<p class="mb-4">La IA promete un futuro donde el aprendizaje será <strong>hiper-personalizado</strong>. Los tutores virtuales guiarán al estudiante a su propio ritmo, y la realidad aumentada transformará el aula.</p><p class="font-semibold italic">El docente será el <strong>facilitador, el diseñador de experiencias y el mentor</strong>, enfocando su energía en desarrollar habilidades humanas irremplazables: el pensamiento crítico, la empatía, la ética y la creatividad. La IA optimizará tareas, liberando tiempo, pero la dirección pedagógica siempre será humana.</p>`,
+                        keywords: "future, education, personalization, augmented reality"
+                    },
+                    { 
+                        title: "Reflexiones finales y agradecimiento", 
+                        icon: "handshake",
+                        content: `<p class="mb-4">La IA no está aquí para reemplazarte, sino para darte una mano. Así como un buen mate acompaña las largas jornadas de planificación, las herramientas de IA están listas para hacer más llevadero tu trabajo.</p><p class="font-semibold italic"><strong>¡Es tu turno!</strong> Experimenta, prueba, juega y enseña con IA. Porque, como bien sabes, la educación no cambia al mundo: cambia a las personas que cambiarán el mundo. ¡Adelante, agentes de cambio, el aula del futuro los está esperando!</p>`,
+                        keywords: "hands, partnership, teaching, future"
+                    }
+                ]
+            }
+        ];
+
+        // Preguntas del Quiz de Certificación (3 preguntas por clase = 18 preguntas total)
+        const CERTIFICATION_QUIZ = [
+            // Clase 1 (Bases)
+            { 
+                q: "¿Cuál de las siguientes <strong>NO</strong> es un tipo de Inteligencia Artificial (IA) según su capacidad?",
+                options: ["IA Estrecha (ANI)", "IA General (AGI)", "IA Predictiva (API)", "Superinteligencia Artificial (ASI)"],
+                answer: "IA Predictiva (API)"
+            },
+            {
+                q: "¿Qué concepto se define como el conjunto metódico de pasos o instrucciones lógicas que la IA utiliza para resolver problemas?",
+                options: ["El Prompt", "El Algoritmo", "La Alucinación", "El Sesgo Cognitivo"],
+                answer: "El Algoritmo"
+            },
+            {
+                q: "¿Cuál es el objetivo principal de la <strong>Inteligencia Artificial Generativa (IAGen)</strong>?",
+                options: ["Clasificar datos de entrenamiento", "Resolver problemas específicos de nicho", "Crear ideas y contenidos nuevos (texto, imagen, música)", "Diagnosticar enfermedades médicas"],
+                answer: "Crear ideas y contenidos nuevos (texto, imagen, música)"
+            },
+            // Clase 2 (Riesgos)
+            {
+                q: "El término <strong>'alucinación'</strong> en IA se refiere a:",
+                options: ["Un sistema de IA que no puede ver correctamente", "Un error donde el sistema produce resultados inesperados o falsos", "El proceso de aprendizaje profundo de la IA", "Un tipo de sesgo algorítmico"],
+                answer: "Un error donde el sistema produce resultados inesperados o falsos"
+            },
+            {
+                q: "¿Qué tipo de sesgo surge cuando los datos de entrenamiento de la IA no representan equitativamente a toda la población?",
+                options: ["Sesgo Estereotipador", "Sesgo Cognitivo", "Sesgo de Muestra", "Sesgo de Interacción"],
+                answer: "Sesgo de Muestra"
+            },
+            {
+                q: "Como docentes, ¿cuál es una de las responsabilidades clave respecto a la privacidad y la IA?",
+                options: ["Aceptar todos los términos de servicio sin leerlos", "Enseñar a los estudiantes a <strong>gestionar su huella digital</strong> y a comprender los términos de servicio", "Animar a los estudiantes a compartir la mayor cantidad de datos posible", "Ignorar las políticas de datos de las plataformas"],
+                answer: "Enseñar a los estudiantes a <strong>gestionar su huella digital</strong> y a comprender los términos de servicio"
+            },
+            // Clase 3 (Prompts)
+            {
+                q: "¿Cuál es el concepto que se considera la <strong>nueva alfabetización digital</strong> y se define como una instrucción o pregunta dada a un sistema de IA?",
+                options: ["El Algoritmo", "El Prompt", "El LLM", "El Sesgo"],
+                answer: "El Prompt"
+            },
+            {
+                q: "Una de las <strong>5 Claves</strong> para crear prompts efectivos es:",
+                options: ["Omitir el contexto para que la IA sea más creativa", "Especificar el nivel de dificultad y el tipo de respuesta deseada", "Escribir la instrucción con lenguaje informal para mayor naturalidad", "Dejar que la IA determine libremente la extensión del texto"],
+                answer: "Especificar el nivel de dificultad y el tipo de respuesta deseada"
+            },
+            {
+                q: "¿Qué se recomienda hacer siempre con el contenido generado por un <strong>LLM</strong> (Modelo de Lenguaje de Gran Escala)?",
+                options: ["Asumir que es 100% veraz y publicarlo inmediatamente", "Usarlo para búsquedas rápidas, pero no para crear contenido", "Hacer un proceso de <strong>verificación cruzada</strong> y validación", "Ignorar el proceso de prompt engineering"],
+                answer: "Hacer un proceso de <strong>verificación cruzada</strong> y validación"
+            },
+            // Clase 4 (Gestión Docente)
+            {
+                q: "¿Cuál es el principal beneficio de la IA en la <strong>gestión docente y administrativa</strong>?",
+                options: ["Reemplazar completamente al docente en la planificación", "Aumentar el tiempo dedicado a la redacción de informes", "Automatizar tareas repetitivas, liberando tiempo para lo pedagógico", "Eliminar la necesidad de reuniones con familias"],
+                answer: "Automatizar tareas repetitivas, liberando tiempo para lo pedagógico"
+            },
+            {
+                q: "Un <strong>'Sistema de tutoría inteligente'</strong> es un ejemplo de herramienta de IA cuyo objetivo es:",
+                options: ["Generar informes de desempeño para la dirección", "Proporcionar una experiencia de aprendizaje personalizada", "Crear presentaciones visuales automáticas", "Planificar agendas de reuniones"],
+                answer: "Proporcionar una experiencia de aprendizaje personalizada"
+            },
+            {
+                q: "Cuando se usa ChatGPT para generar informes de desempeño estudiantil, ¿qué recomendación ética es fundamental?",
+                options: ["Usar un lenguaje muy técnico para impresionar a las familias", "Asegurarse de que el informe sea extenso y detallado", "<strong>Anonimizar los datos</strong> (nunca ingresar datos personales sensibles)", "Copiar y pegar el texto generado sin ninguna revisión"],
+                answer: "<strong>Anonimizar los datos</strong> (nunca ingresar datos personales sensibles)"
+            },
+            // Clase 5 (Materiales Educativos)
+            {
+                q: "¿Qué herramienta específica de IA permite a los docentes adaptar un texto a distintos niveles de lectura, generando resúmenes y vocabulario?",
+                options: ["Cuenti.to", "Midjourney", "Diffit", "DALL-E"],
+                answer: "Diffit"
+            },
+            {
+                q: "¿Qué funcionalidad de Canva con IA te permite generar ilustraciones a partir de una descripción en texto, siendo ideal para materiales sin derechos de autor?",
+                options: ["Magic Write", "Texto a Imagen", "Magic Design", "Analítica de Aprendizaje"],
+                answer: "Texto a Imagen"
+            },
+            {
+                q: "Cuando se crean videos educativos cortos con IA, ¿cuál es la recomendación profesional para asegurar la atención del estudiante?",
+                options: ["Que duren más de 10 minutos para ser completos", "Utilizar la voz automatizada sin subtítulos", "Mantener la duración <strong>por debajo de 3 minutos</strong> y usarlos para introducir temas", "Usar solo imágenes sin movimiento"],
+                answer: "Mantener la duración <strong>por debajo de 3 minutos</strong> y usarlos para introducir temas"
+            },
+            // Clase 6 (Reflexiones Finales)
+            {
+                q: "Respecto al **plagio asistido por IA**, ¿cuál es la solución pedagógica más efectiva?",
+                options: ["Prohibir totalmente el uso de la IA en cualquier tarea", "Evaluar solo el producto final sin revisar el proceso", "Pedir <strong>evaluaciones auténticas</strong> que valoren el proceso, el razonamiento y la creatividad", "Usar herramientas de detección de plagio como única estrategia"],
+                answer: "Pedir <strong>evaluaciones auténticas</strong> que valoren el proceso, el razonamiento y la creatividad"
+            },
+            {
+                q: "En el futuro de la educación con IA, ¿en qué rol debe enfocarse el docente?",
+                options: ["Ser el principal proveedor de información fáctica", "Automatizar completamente la evaluación y el diseño curricular", "Ser el <strong>facilitador, diseñador de experiencias y mentor</strong> que desarrolla habilidades humanas irremplazables", "Competir directamente con los tutores virtuales"],
+                answer: "Ser el <strong>facilitador, diseñador de experiencias y mentor</strong> que desarrolla habilidades humanas irremplazables"
+            },
+            {
+                q: "Una de las mayores amenazas de la IA a nivel social es que podría:",
+                options: ["Eliminar la necesidad de los libros de texto", "Generar demasiados materiales educativos", "Ampliar la <strong>brecha digital</strong> entre quienes tienen acceso a la tecnología y quienes no", "Hacer que las reuniones de profesores sean más cortas"],
+                answer: "Ampliar la <strong>brecha digital</strong> entre quienes tienen acceso a la tecnología y quienes no"
+            }
+        ];
+        
+        // --- 2. GESTIÓN DEL ESTADO Y NAVEGACIÓN ---
+
+        let currentView = 'dashboard'; 
+        let currentClassId = null;
+        let currentBlockIndex = 0;
+        let quizCompleted = false; 
+
+        const contentContainer = document.getElementById('content-container');
+        const dashboardBtn = document.getElementById('dashboard-btn');
+        const progressDisplay = document.getElementById('progress-display');
+        const currentClassDisplay = document.getElementById('current-class-display');
+        const youtubeModal = document.getElementById('youtube-modal');
+        const quizModal = document.getElementById('quiz-modal');
+
+        // Función para renderizar íconos de Lucide
+        function renderIcons() {
+            lucide.createIcons();
+        }
+
+        // Simula la progresión de clases completadas
+        function checkCompletion() {
+            const completedCount = Object.values(courseProgress).filter(p => p).length;
+            progressDisplay.textContent = `${completedCount} / ${CLASS_CONTENT.length} (${Math.round((completedCount / CLASS_CONTENT.length) * 100)}%)`;
+            
+            // Si todas las clases están completas, mostramos el modal de certificación.
+            if (completedCount === CLASS_CONTENT.length && !quizCompleted) {
+                setTimeout(showCertificationModal, 500);
+            }
+        }
+
+        function markClassComplete(classId) {
+            courseProgress[classId] = true;
+            checkCompletion();
+            // Refrescar el dashboard para actualizar el estado del botón
+            if (currentView === 'dashboard') {
+                renderDashboard();
+            }
+        }
+
+        function isClassUnlocked(classId) {
+            // Navegación libre: todas las clases están desbloqueadas.
+            return true;
+        }
+
+        function isClassCompleted(classId) {
+            return courseProgress[classId] === true;
+        }
+
+        // --- 3. RENDERING DE VISTAS ---
+
+        function renderDashboard() {
+            currentView = 'dashboard';
+            currentClassId = null;
+            currentBlockIndex = 0;
+            dashboardBtn.classList.add('hidden');
+            currentClassDisplay.classList.add('hidden');
+            
+            checkCompletion();
+
+            // Mensaje de Bienvenida con Animación (Estética ajustada para centrado y reducción)
+            const welcomeMessage = `
+                <div class="p-8 md:p-12 mb-8 bg-white rounded-xl shadow-lg border-t-4 border-accent">
+                    <div class="flex flex-col items-center text-center">
+                        <div class="w-full max-w-xl h-24 bg-accent rounded-lg mb-4 shadow-md flex items-center justify-center">
+                            <h3 class="text-3xl font-extrabold text-white">Lidera la Transformación Educativa con IA</h3>
+                        </div>
+                        <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-800 mb-1">¡Bienvenido al Panel de Liderazgo!</h2>
+                        <p id="typing-text" class="text-xl text-gray-600 font-light typing-animation max-w-lg mx-auto border-r-2 border-gray-600">
+                            Tu camino hacia la maestría en IA comienza aquí.
+                        </p>
+                    </div>
+
+                    <div class="text-left max-w-xl mx-auto mt-6 p-4 bg-gray-50 rounded-lg">
+                        <h3 class="font-bold text-lg mb-2 text-accent">La Espiral de Aprendizaje: Cómo Cursar</h3>
+                        <ul class="list-disc pl-5 text-sm mt-2 text-gray-700 space-y-1">
+                            <li><strong>Secuencia:</strong> Todas las clases están <strong>desbloqueadas</strong> para tu libre navegación. Sigue el orden recomendado para un mejor aprendizaje.</li>
+                            <li><strong>Bloques:</strong> Dentro de cada Clase, navega por los temas (Bloques) usando los botones de colores. Debes recorrer todos los bloques para completar la unidad.</li>
+                            <li><strong>Progreso:</strong> Al llegar al final de la última sección, usa el botón "Marcar como Completada" para registrar tu avance en el Dashboard.</li>
+                        </ul>
+                    </div>
+                </div>
+            `;
+
+            // Grid de Clases
+            let classesHtml = CLASS_CONTENT.map((cls) => {
+                const color = CLASS_COLORS.find(c => c.id === cls.id);
+                const isCompleted = isClassCompleted(cls.id);
+                const buttonClass = `${color.name} ${color.shadow} hover:shadow-2xl hover:scale-[1.01] transition transform duration-300`;
+                const icon = isCompleted ? 'check-circle' : 'arrow-right-circle';
+
+                // Reemplazar ** con <strong> en el teaser para el botón (CORREGIDO)
+                const teaserContent = cls.teaser.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+                return `
+                    <button onclick="enterClass(${cls.id})"
+                            class="${buttonClass} p-6 rounded-xl text-left flex flex-col justify-between h-full w-full block-btn-base">
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-xs font-bold uppercase opacity-80">Clase ${cls.id}</span>
+                            <i data-lucide="${icon}" class="w-6 h-6 ${isCompleted ? 'text-white' : 'text-gray-200'}"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-2">${cls.title}</h3>
+                        <p class="text-sm opacity-90">${teaserContent}</p>
+                        <span class="text-sm font-medium pt-3 border-t border-dashed border-white/30 mt-3">
+                            ${isCompleted ? 'Completada' : '¡Aprender ahora! →'}
+                        </span>
+                    </button>
+                `;
+            }).join('');
+
+            contentContainer.innerHTML = `
+                ${welcomeMessage}
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    ${classesHtml}
+                </div>
+            `;
+
+            renderIcons();
+        }
+
+        function enterClass(classId) {
+            currentClassId = classId;
+            currentView = 'class';
+            dashboardBtn.classList.remove('hidden');
+            currentClassDisplay.classList.remove('hidden');
+            
+            // Al entrar a una clase, resetear el índice del bloque al primero
+            currentBlockIndex = 0; 
+            renderClassBlocks();
+        }
+
+        function renderClassBlocks() {
+            const cls = CLASS_CONTENT.find(c => c.id === currentClassId);
+            const color = CLASS_COLORS.find(c => c.id === cls.id);
+            const completed = isClassCompleted(cls.id);
+
+            currentClassDisplay.textContent = `Estás en: Clase ${cls.id}`;
+
+            // Aplicar el color y el sombreado dinámico al Header de la clase
+            const classHeader = `
+                <div class="p-8 md:p-10 mb-8 ${color.name} rounded-xl text-white shadow-xl">
+                    <h2 class="text-3xl sm:text-4xl font-extrabold mb-2">${cls.title}</h2>
+                    <p class="text-xl opacity-90">${cls.subtitle}</p>
+                    <p class="mt-4 text-sm font-semibold opacity-80">${completed ? 'CLASE COMPLETADA' : 'SELECCIONA UN TEMA PARA COMENZAR'}</p>
+                </div>
+            `;
+            
+            // Grid de Bloques - Aplicando el color dinámico y el efecto Neón a los botones internos
+            let blocksHtml = cls.blocks.map((block, index) => {
+                const blockNumber = index + 1;
+                // Botones internos usan el color de la clase y el efecto Neón
+                const buttonClass = `${color.name} ${color.shadow} hover:bg-opacity-90 hover:scale-[1.03] transition transform duration-200`;
+
+                return `
+                    <button onclick="showBlock(${index})" 
+                            class="${buttonClass} p-5 rounded-lg text-left flex items-center justify-between block-btn-base h-full w-full text-lg font-bold">
+                        <span>${blockNumber}. ${block.title}</span>
+                        <i data-lucide="${block.icon}" class="w-6 h-6 ml-4"></i>
+                    </button>
+                `;
+            }).join('');
+
+            contentContainer.innerHTML = `
+                ${classHeader}
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                    ${blocksHtml}
+                </div>
+            `;
+            
+            renderIcons();
+        }
+
+        // Función para renderizar contenido con imágenes/iconos alternados
+        function createContentSection(content, icon, isImageLeft, keywords, seed) {
+            // URL de imagen temática (Unsplash)
+            const query = encodeURIComponent(keywords.replace(/,\s/g, ' '));
+            const imageUrl = `https://source.unsplash.com/400x300/?${query}&sig=${seed}`;
+
+            const imageHtml = `
+                <div class="flex items-center justify-center h-full min-h-[200px]">
+                    <img src="${imageUrl}" alt="Imagen de ${keywords}" class="content-image shadow-lg">
+                </div>
+            `;
+
+            const blockContentHtml = `<div class="text-lg space-y-4 prose max-w-none">${content}</div>`;
+
+            // Estructura de la cuadrícula
+            const gridContent = `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+                    <div class="md:col-span-1">${isImageLeft ? imageHtml : blockContentHtml}</div>
+                    <div class="md:col-span-1">${isImageLeft ? blockContentHtml : imageHtml}</div>
+                </div>
+            `;
+
+            return gridContent;
+        }
+
+        function showBlock(index) {
+            currentBlockIndex = index;
+            currentView = 'block';
+            const cls = CLASS_CONTENT.find(c => c.id === currentClassId);
+            const block = cls.blocks[index];
+            const totalBlocks = cls.blocks.length;
+            const color = CLASS_COLORS.find(c => c.id === cls.id);
+
+            // Determinar si el icono/imagen va a la izquierda (Bloque 0, 2, 4...) o a la derecha (Bloque 1, 3, 5...)
+            const isImageLeft = index % 2 === 0; 
+            
+            // Usar la función de placeholder con palabras clave del bloque
+            const blockKeywords = block.keywords.toLowerCase().replace(/[^a-z0-9\s]/g, '').split(' ').join(',');
+            const imageHtml = createContentSection(block.content, block.icon, isImageLeft, blockKeywords, cls.id * 10 + index);
+
+
+            const navigationHtml = `
+                <div class="flex justify-between mt-8 pt-4 border-t border-gray-200">
+                    <button onclick="navigateBlock(${index - 1})" 
+                            class="py-2 px-4 ${index === 0 ? 'opacity-50 cursor-not-allowed' : 'bg-gray-200 hover:bg-gray-300'} rounded-lg transition" 
+                            ${index === 0 ? 'disabled' : ''}>
+                        <i data-lucide="arrow-left" class="w-5 h-5 inline-block mr-2"></i> Anterior
+                    </button>
+                    <button onclick="renderClassBlocks()" class="py-2 px-4 bg-gray-200 hover:bg-gray-300 rounded-lg transition">
+                        Volver a Bloques
+                    </button>
+                    <button onclick="navigateBlock(${index + 1})" 
+                            class="py-2 px-4 ${color.shadow} ${index === totalBlocks - 1 ? 'opacity-50 cursor-not-allowed' : `${color.name} text-white`} rounded-lg transition" 
+                            ${index === totalBlocks - 1 ? 'disabled' : ''}>
+                        Siguiente <i data-lucide="arrow-right" class="w-5 h-5 inline-block ml-2"></i>
+                    </button>
+                </div>
+            `;
+            
+            // Botón de finalización
+            const completionButton = (index === totalBlocks - 1 && !isClassCompleted(currentClassId)) 
+                ? `<button onclick="markClassComplete(${currentClassId}); renderDashboard();" class="w-full py-3 mt-8 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 transition">¡Has terminado el recorrido! Marcar Clase ${currentClassId} como Completada</button>`
+                : '';
+
+            contentContainer.innerHTML = `
+                <div class="mb-6 pb-4 border-b border-gray-300">
+                    <span class="text-sm font-semibold text-gray-500">Clase ${cls.id} / Bloque ${index + 1} de ${totalBlocks}</span>
+                    <h3 class="text-3xl font-bold mt-1 text-gray-800">${block.title}</h3>
+                </div>
+                
+                ${imageHtml}
+                
+                ${completionButton}
+                ${navigationHtml}
+            `;
+
+            renderIcons();
+            window.scrollTo(0, 0); 
+        }
+
+        function navigateBlock(newIndex) {
+            const cls = CLASS_CONTENT.find(c => c.id === currentClassId);
+            
+            if (newIndex >= 0 && newIndex < cls.blocks.length) {
+                showBlock(newIndex);
+            } else if (newIndex >= cls.blocks.length) {
+                // Si es el último bloque, intenta ir a la siguiente clase o al dashboard.
+                if (currentClassId < CLASS_CONTENT.length) {
+                    markClassComplete(currentClassId); // Marcar la actual como completa al avanzar
+                    enterClass(currentClassId + 1);
+                } else {
+                    markClassComplete(currentClassId); // Marcar la última clase
+                    renderDashboard();
+                }
+            }
+        }
+
+        // Función para abrir modal de YouTube
+        function openYouTubeModal(videoId) {
+            const embedContainer = document.getElementById('youtube-embed-container');
+            embedContainer.innerHTML = `<iframe src="https://www.youtube.com/embed/${videoId}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen class="w-full h-full rounded-lg"></iframe>`;
+            youtubeModal.classList.remove('hidden');
+            renderIcons();
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+            if (modalId === 'youtube-modal') {
+                document.getElementById('youtube-embed-container').innerHTML = ''; // Detener el video
+            }
+        }
+        
+        // --- 4. GESTIÓN DE CERTIFICACIÓN ---
+
+        function showCertificationModal() {
+            const completedClasses = Object.values(courseProgress).filter(p => p).length;
+            
+            const summaryHtml = `
+                <div class="text-center p-8">
+                    <i data-lucide="trophy" class="w-24 h-24 mx-auto text-yellow-500 mb-4"></i>
+                    <h2 class="text-3xl font-extrabold text-gray-800 mb-2">¡Felicidades, Curso Completado!</h2>
+                    <p class="text-lg text-gray-600 mb-6">Has completado con éxito todas las clases de IA para Docentes.</p>
+                    
+                    <div class="bg-gray-100 p-4 rounded-lg mb-8">
+                        <h3 class="text-xl font-bold mb-2">Resumen de tu Logro:</h3>
+                        <p class="text-gray-700">Clases completadas: <strong>${completedClasses} de ${CLASS_CONTENT.length}</strong></p>
+                        <p class="text-gray-700">Pronto serás <strong>Agente de Cambio</strong> en el aula.</p>
+                    </div>
+
+                    <button onclick="startQuiz()" class="bg-green-600 text-white text-xl font-bold py-3 px-8 rounded-full hover:bg-green-700 transition transform hover:scale-105 shadow-lg">
+                        Acceder a la Actividad de Certificación
+                    </button>
+                    <button onclick="closeModal('quiz-modal')" class="text-sm text-gray-500 mt-4 block mx-auto">Volver al Dashboard</button>
+                </div>
+            `;
+            
+            quizModal.innerHTML = `
+                <div class="relative w-11/12 max-w-2xl bg-white rounded-lg shadow-2xl">
+                    ${summaryHtml}
+                </div>
+            `;
+            quizModal.classList.remove('hidden');
+            renderIcons();
+        }
+
+        function startQuiz() {
+            closeModal('quiz-modal');
+            const quizContainer = document.createElement('div');
+            quizContainer.className = "max-w-3xl mx-auto p-8 bg-white rounded-xl shadow-lg";
+            quizContainer.id = "certification-quiz-form";
+
+            let quizHtml = '<h2 class="text-3xl font-bold text-accent mb-6 border-b pb-2">Examen de Certificación</h2>';
+            quizHtml += '<p class="text-gray-600 mb-6">Responde las siguientes preguntas. Debes obtener al menos un <strong>80% de aciertos</strong> para certificar.</p>';
+
+            CERTIFICATION_QUIZ.forEach((item, index) => {
+                quizHtml += `<div class="mb-6 p-4 border rounded-lg bg-gray-50">
+                    <p class="font-semibold text-gray-800 mb-3">Pregunta ${index + 1}: ${item.q}</p>`;
+                
+                // Mezclar opciones para que no siempre estén en el mismo orden
+                const shuffledOptions = [...item.options].sort(() => Math.random() - 0.5);
+
+                shuffledOptions.forEach(option => {
+                    const optionId = `q${index}-opt${option.replace(/\s/g, '-')}`;
+                    quizHtml += `
+                        <label for="${optionId}" class="block py-2 px-3 rounded-lg hover:bg-white cursor-pointer transition duration-150">
+                            <input type="radio" id="${optionId}" name="question${index}" value="${option}" class="mr-2 text-accent focus:ring-accent">
+                            ${option}
+                        </label>
+                    `;
+                });
+                quizHtml += `</div>`;
+            });
+
+            quizHtml += `<button type="button" onclick="submitQuiz()" class="w-full py-3 bg-accent text-white font-bold rounded-lg hover:bg-teal-600 transition transform hover:scale-[1.01] mt-4">
+                Finalizar y Obtener Certificación
+            </button>`;
+
+            quizContainer.innerHTML = quizHtml;
+            contentContainer.innerHTML = '';
+            contentContainer.appendChild(quizContainer);
+            renderIcons();
+        }
+
+        function submitQuiz() {
+            const form = document.getElementById('certification-quiz-form');
+            let correctAnswers = 0;
+            const totalQuestions = CERTIFICATION_QUIZ.length;
+            const passingScore = Math.ceil(totalQuestions * 0.80); // 80%
+
+            CERTIFICATION_QUIZ.forEach((item, index) => {
+                const selectedOption = form.querySelector(`input[name="question${index}"]:checked`);
+                if (selectedOption && selectedOption.value === item.answer) {
+                    correctAnswers++;
+                }
+            });
+
+            const scorePercentage = (correctAnswers / totalQuestions) * 100;
+
+            let resultHtml = '';
+            if (scorePercentage >= 80) {
+                quizCompleted = true; // Marcar el quiz como completado en esta sesión
+                resultHtml = `
+                    <i data-lucide="award" class="w-24 h-24 mx-auto text-green-500 mb-4"></i>
+                    <h2 class="text-4xl font-extrabold text-green-600 mb-3">¡CERTIFICACIÓN APROBADA!</h2>
+                    <p class="text-xl text-gray-700 mb-4">¡Felicitaciones! Has demostrado un conocimiento sólido.</p>
+                    <p class="text-2xl font-bold mb-6">Puntuación: ${correctAnswers} de ${totalQuestions} (${scorePercentage.toFixed(2)}%)</p>
+                    <p class="text-lg text-gray-600">Puedes volver al Dashboard y empezar a aplicar tus conocimientos de IA.</p>
+                `;
+            } else {
+                resultHtml = `
+                    <i data-lucide="circle-x" class="w-24 h-24 mx-auto text-red-500 mb-4"></i>
+                    <h2 class="text-4xl font-extrabold text-red-600 mb-3">Examen NO APROBADO</h2>
+                    <p class="text-xl text-gray-700 mb-4">Necesitas un mínimo de <strong>${passingScore} respuestas correctas</strong>.</p>
+                    <p class="text-2xl font-bold mb-6">Puntuación: ${correctAnswers} de ${totalQuestions} (${scorePercentage.toFixed(2)}%)</p>
+                    <p class="text-lg text-gray-600">Te animamos a repasar el contenido del curso y volver a intentarlo.</p>
+                `;
+            }
+
+            // Mostrar el resultado en el modal
+            quizModal.innerHTML = `
+                <div class="relative w-11/12 max-w-xl p-8 text-center bg-white rounded-lg shadow-2xl">
+                    ${resultHtml}
+                    <button onclick="closeModal('quiz-modal'); renderDashboard();" class="mt-8 py-3 px-6 bg-accent text-white font-bold rounded-full hover:bg-teal-600 transition">
+                        Volver al Panel Principal
+                    </button>
+                </div>
+            `;
+            quizModal.classList.remove('hidden');
+            renderIcons();
+        }
+
+        // --- 5. INICIALIZACIÓN ---
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderDashboard();
+
+            // Navegación rápida al dashboard
+            dashboardBtn.addEventListener('click', renderDashboard);
+            
+            renderIcons();
+        });
+    </script>
+</body>
+</html>
