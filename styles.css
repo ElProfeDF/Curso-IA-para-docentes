@@ -1,0 +1,94 @@
+body {
+    font-family: 'Work Sans', sans-serif;
+    background-color: #f7fafc;
+    color: #1a202c;
+}
+
+/* Paleta Principal */
+.text-accent { color: #06b6d4; } /* Teal */
+.bg-accent { background-color: #06b6d4; }
+
+/* Definición de la función box-shadow para el efecto de neón */
+.neon-shadow-1:hover { box-shadow: 0 0 15px #06b6d4; }
+.neon-shadow-2:hover { box-shadow: 0 0 15px #ec4899; }
+.neon-shadow-3:hover { box-shadow: 0 0 15px #fbbf24; }
+.neon-shadow-4:hover { box-shadow: 0 0 15px #3b82f6; }
+.neon-shadow-5:hover { box-shadow: 0 0 15px #8b5cf6; }
+.neon-shadow-6:hover { box-shadow: 0 0 15px #10b981; }
+
+/* Colores de las Clases (Fondo del Bloque) */
+.class-color-1 { background-color: #06b6d4; } /* Teal */
+.class-color-2 { background-color: #ec4899; } /* Fuchsia */
+.class-color-3 { background-color: #fbbf24; } /* Amber */
+.class-color-4 { background-color: #3b82f6; } /* Blue */
+.class-color-5 { background-color: #8b5cf6; } /* Purple */
+.class-color-6 { background-color: #10b981; } /* Emerald Green */
+
+/* NUEVO ESTILO: Color Oscuro para el Bloque de Ejemplo (Contraste) */
+.class-dark-1 { background-color: #0891b2; } /* Darker Teal */
+.class-dark-2 { background-color: #d946ef; } /* Darker Fuchsia */
+.class-dark-3 { background-color: #f59e0b; } /* Darker Amber */
+.class-dark-4 { background-color: #2563eb; } /* Darker Blue */
+.class-dark-5 { background-color: #7c3aed; } /* Darker Purple */
+.class-dark-6 { background-color: #059669; } /* Darker Emerald Green */
+/* FIN NUEVO ESTILO */
+
+/* Transiciones y animaciones */
+.class-card-hover {
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+.class-card-hover:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px -5px rgba(6, 182, 212, 0.4);
+}
+
+.block-btn-base {
+    transition: all 0.3s ease;
+    color: white;
+}
+.block-btn-base:hover {
+    transform: scale(1.03);
+}
+
+/* Clase Completada en el Dashboard */
+.class-completed {
+    background-color: #cbd5e1; /* Fondo gris suave */
+    color: #4b5563; /* Texto gris oscuro */
+    border: 2px solid #10b981; /* Borde verde esmeralda para destacar el check */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    cursor: default;
+}
+.class-completed:hover {
+    transform: none; /* Desactivar la animación hover en completadas */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Animación de texto para el dashboard */
+@keyframes typing {
+    from { width: 0 }
+    to { width: 100% }
+}
+.typing-animation {
+    overflow: hidden;
+    border-right: .15em solid #333; /* Color de cursor más oscuro */
+    white-space: nowrap;
+    animation:
+        typing 4s steps(40, end),
+        blink-caret .75s step-end infinite;
+}
+@keyframes blink-caret {
+    from, to { border-color: transparent }
+    50% { border-color: #333 }
+}
+
+/* Estilo para asegurar que el contenido dentro de <p> se muestre en negrita */
+.prose strong {
+    font-weight: 700 !important;
+}
+
+/* Estilo para forzar el color de texto a blanco dentro de los bloques de color */
+.prose.text-white a {
+    color: white; /* Asegura que los links se vean en el fondo de color */
+    text-decoration-color: white;
+    font-weight: 600;
+}
