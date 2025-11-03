@@ -24,14 +24,13 @@ body {
 .class-color-5 { background-color: #8b5cf6; } /* Purple */
 .class-color-6 { background-color: #10b981; } /* Emerald Green */
 
-/* NUEVO ESTILO: Color Oscuro para el Bloque de Ejemplo (Contraste) */
+/* Color Oscuro para el Bloque de Ejemplo (Contraste) */
 .class-dark-1 { background-color: #0891b2; } /* Darker Teal */
 .class-dark-2 { background-color: #d946ef; } /* Darker Fuchsia */
 .class-dark-3 { background-color: #f59e0b; } /* Darker Amber */
 .class-dark-4 { background-color: #2563eb; } /* Darker Blue */
 .class-dark-5 { background-color: #7c3aed; } /* Darker Purple */
 .class-dark-6 { background-color: #059669; } /* Darker Emerald Green */
-/* FIN NUEVO ESTILO */
 
 /* Transiciones y animaciones */
 .class-card-hover {
@@ -79,6 +78,35 @@ body {
 @keyframes blink-caret {
     from, to { border-color: transparent }
     50% { border-color: #333 }
+}
+
+/* RESPONSIVIDAD: Ajuste para el texto animado y otros elementos en móviles */
+@media (max-width: 640px) {
+    /* Desactivar la animación en pantallas pequeñas para evitar desbordamiento */
+    .typing-animation {
+        white-space: normal;
+        overflow: visible;
+        border-right: none;
+        animation: none;
+    }
+    
+    /* Asegurar que el contenido del encabezado de clase se apile correctamente */
+    .class-header-responsive {
+        flex-direction: column;
+        align-items: flex-start !important;
+    }
+    
+    /* Mover el botón de completado al inicio y darle margen superior */
+    .class-header-button-wrapper {
+        margin-left: 0 !important;
+        margin-top: 1rem;
+        width: 100%; /* El botón ocupa todo el ancho disponible */
+    }
+    
+    .class-header-button-wrapper button {
+        width: 100%;
+        font-size: 0.9rem; /* Un poco más pequeño */
+    }
 }
 
 /* Estilo para asegurar que el contenido dentro de <p> se muestre en negrita */

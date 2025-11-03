@@ -85,7 +85,7 @@ function downloadCertificate(name, documentId) {
         doc.setTextColor(0, 0, 0); // Color Negro
 
         // Coordenadas AJUSTADAS para el espacio debajo de "Otorgado a" y sobre la línea horizontal.
-        const textY = 110; 
+        const textY = 105; // Ajuste final para subirlo
         
         // Dibuja el nombre y apellido
         doc.text(name.toUpperCase(), pageWidth / 2, textY, { align: 'center' });
@@ -299,13 +299,14 @@ function renderClassBlocks() {
            </button>`;
 
     // Aplicar el color y el sombreado dinámico al Header de la clase
+    // Se agregan clases responsivas al contenedor del encabezado
     const classHeader = `
-        <div class="p-8 md:p-10 mb-8 ${color.name} rounded-xl text-white shadow-xl flex justify-between items-center">
+        <div class="p-8 md:p-10 mb-8 ${color.name} rounded-xl text-white shadow-xl flex flex-col sm:flex-row justify-between items-start sm:items-center class-header-responsive">
             <div>
                 <h2 class="text-3xl sm:text-4xl font-extrabold mb-2">${cls.title}</h2>
                 <p class="text-xl opacity-90">${cls.subtitle}</p>
             </div>
-            <div class="flex-shrink-0 ml-4">
+            <div class="flex-shrink-0 ml-0 sm:ml-4 class-header-button-wrapper">
                 ${completionButton}
             </div>
         </div>
@@ -477,7 +478,7 @@ function renderActivityMenu(classId) {
             <p class="text-lg text-gray-600 mb-6">${cls.summary}</p>
 
             <h3 class="font-bold text-2xl text-accent mb-4">Selecciona un paso para comenzar:</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 ${stepsHtml}
             </div>
             <button onclick="closeModal('content-modal')" class="mt-8 py-2 px-4 bg-gray-200 hover:bg-gray-300 rounded-lg transition">
